@@ -5,6 +5,16 @@
 
 ---
 
+## [v0.50.12] KaTeX math rendering in chat and workspace previews (fixes #347)
+
+- **LaTeX / KaTeX math now renders in chat messages and workspace file previews** (`static/ui.js`, `static/style.css`, `static/index.html`): Inline math (`$...$`, `\(...\)`) and display math (`$$...$$`, `\[...\]`) are now rendered via KaTeX instead of displaying as raw text. The implementation follows the existing mermaid lazy-load pattern: delimiters are stashed before markdown processing, placeholder elements are emitted, and KaTeX is loaded from CDN on first use. No KaTeX JS is loaded unless math is actually present on the page.
+  - `$$...$$` and `\[...\]` → centered display math (`<div class="katex-block">`)
+  - `$...$` and `\(...\)` → inline math (`<span class="katex-inline">`); requires non-space at `$` boundaries to avoid false positives on currency (`$5`)
+  - KaTeX JS loaded lazily from CDN with SRI integrity hash; KaTeX CSS loaded eagerly in `<head>` to avoid layout shift
+  - `throwOnError:false` — invalid LaTeX degrades gracefully to a code span rather than breaking the message
+  - Works in both chat (`.msg-body`) and workspace file preview (`.preview-md`) — both use `renderMd()`
+  - 18 new structural tests in `tests/test_issue347.py`; 831 tests total (up from 813)
+
 ## [v0.50.11] Chat table styles + plain URL auto-linking (fixes #341, #342)
 
 - **Tables in chat messages now render with visible borders** (`static/style.css`): The `.msg-body` area had no table CSS, so markdown tables sent by the assistant were unstyled and unreadable. Four new rules mirror the existing `.preview-md` table styles: `border-collapse:collapse`, per-cell padding and borders via `var(--border2)`, and an alternating-row tint. Two `:root[data-theme="light"]` overrides ensure the borders and header background adapt correctly in light mode. (fixes #341)
